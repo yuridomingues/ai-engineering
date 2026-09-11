@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "project-context": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "tsx",
+        "${workspaceFolder}/mcp/starter-typescript/src/index.ts"
+      ],
+      "env": {
+        "AI_ENGINEERING_ROOT": "${workspaceFolder}"
+      }
+    }
+  }
+}
