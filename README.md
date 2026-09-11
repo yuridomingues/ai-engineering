@@ -115,7 +115,7 @@ O starter demonstra uma ferramenta de leitura limitada a uma raiz explícita, se
 - growth-engineer
 - verifier
 
-## Princípios
+## Qualidade automática\n\nA workflow em .github/workflows/ci.yml executa o doctor do toolkit e valida o starter MCP com typecheck + testes em pull requests e pushes para main.\n\n## Princípios
 
 **Context engineering > prompt dumping.** O modelo precisa do contexto certo, na hora certa, não de um arquivo gigante carregado em toda requisição.
 
