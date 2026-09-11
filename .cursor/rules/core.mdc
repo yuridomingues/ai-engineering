@@ -1,0 +1,16 @@
+---
+description: Core AI engineering rules for reliable agentic development
+alwaysApply: true
+---
+Use the smallest customization mechanism that solves the task.
+
+- Durable repo facts belong in AGENTS.md.
+- Repeatable workflows belong in Skills.
+- Use subagents for isolated context, parallel work, or independent verification.
+- Use MCP for external tools/data/actions, not as a container for generic expertise.
+- Validate tool inputs and structured outputs.
+- Never expose secrets in prompts, logs, fixtures, or committed config.
+- Require explicit intent for destructive or production-impacting actions.
+- For AI behavior changes, add or update eval cases.
+- Never claim tests passed unless they were actually run.
+- Prefer concise context and on-demand references over giant always-on prompts.
