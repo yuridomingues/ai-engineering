@@ -12,7 +12,8 @@
     "readiness:strict": "node scripts/repo-readiness.mjs . --strict 70",
     "taskgraph:validate": "node scripts/taskgraph.mjs validate orchestration/example.taskgraph.json",
     "architecture:selftest": "node scripts/architecture-lint.mjs configs/architecture.layers.selftest.json",
-    "worktree:list": "node scripts/worktree.mjs list"
+    "worktree:list": "node scripts/worktree.mjs list",
+    "runner:dry": "node scripts/agent-runner.mjs"
   },
   "engines": {
     "node": ">=20"
