@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "name": "bugfix-playbook",
+  "tasks": [
+    {
+      "id": "reproduce",
+      "title": "Reproduce the defect",
+      "goal": "Observe the reported failure before modifying code and record exact reproduction evidence.",
+      "agent": "runtime-verifier",
+      "dependsOn": [],
+      "risk": "high",
+      "acceptance": [
+        "The failure is reproduced with exact steps, or inability to reproduce is explicitly reported.",
+        "Expected and actual behavior are distinct."
+      ],
+      "verification": [
+        "Capture runtime evidence for the failing path."
+      ]
+    },
+    {
+      "id": "root-cause",
+      "title": "Establish causal root cause",
+      "goal": "Trace the failing path and determine the causal mechanism rather than patching the first suspicious symptom.",
+      "agent": "planner",
+      "dependsOn": [
+        "reproduce"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Root cause is supported by code or runtime evidence.",
+        "Plausible adjacent causes have been considered."
+      ],
+      "verification": [
+        "Document causal chain with repository paths and evidence."
+      ]
+    },
+    {
+      "id": "regression-test",
+      "title": "Encode failing regression",
+      "goal": "Create the strongest stable regression test or repeatable verification recipe before the fix.",
+      "agent": "verifier",
+      "dependsOn": [
+        "root-cause"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "The test/recipe fails for the reproduced reason before the fix."
+      ],
+      "verification": [
+        "Run it pre-fix and store the failure evidence."
+      ]
+    },
+    {
+      "id": "fix",
+      "title": "Apply smallest causal fix",
+      "goal": "Change the minimum necessary code to address the root cause.",
+      "agent": "product-engineer",
+      "dependsOn": [
+        "regression-test"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "The change addresses the causal mechanism.",
+        "Unrelated behavior is not intentionally changed."
+      ],
+      "verification": [
+        "Inspect diff against root-cause explanation."
+      ]
+    },
+    {
+      "id": "static-verify",
+      "title": "Run regression and surrounding checks",
+      "goal": "Run the regression proof plus relevant deterministic test/static gates.",
+      "agent": "verifier",
+      "dependsOn": [
+        "fix"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Regression proof passes.",
+        "Relevant surrounding deterministic checks pass."
+      ],
+      "verification": [
+        "Produce structured passing evidence with exact commands."
+      ]
+    },
+    {
+      "id": "replay",
+      "title": "Replay original failure path",
+      "goal": "Repeat the exact original runtime reproduction after the fix.",
+      "agent": "runtime-verifier",
+      "dependsOn": [
+        "fix"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "Original failure no longer reproduces.",
+        "Expected behavior and side effects are observed."
+      ],
+      "verification": [
+        "Capture before/after runtime evidence using the same path."
+      ]
+    },
+    {
+      "id": "adversarial-review",
+      "title": "Challenge the bug fix",
+      "goal": "Look for hidden regressions, incomplete causal fixes, boundary failures and new security/reliability risks.",
+      "agent": "adversarial-reviewer",
+      "dependsOn": [
+        "static-verify",
+        "replay"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "Blocking findings are resolved or the task remains blocked."
+      ],
+      "verification": [
+        "Record attempted counterexamples and findings."
+      ]
+    },
+    {
+      "id": "integrate",
+      "title": "Integrate verified fix",
+      "goal": "Resolve review findings, rerun invalidated evidence and prepare closeout.",
+      "agent": "integration-engineer",
+      "dependsOn": [
+        "adversarial-review"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Both failure and resolution evidence are linked.",
+        "Remaining uncertainty is explicit."
+      ],
+      "verification": [
+        "Produce final passing evidence."
+      ]
+    }
+  ]
+}

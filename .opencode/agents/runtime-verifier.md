@@ -1,6 +1,6 @@
 ---
 description: Independently verifies real application behavior and side effects with executable evidence.
-mode: subagent
+mode: all
 permission:
   edit: deny
   bash: ask

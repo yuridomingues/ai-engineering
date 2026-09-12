@@ -1,6 +1,6 @@
 ---
 description: Use for LLM features, agents, RAG, retrieval, tool calling, structured outputs, context pipelines, model routing, MCP decisions, evals and observability.
-mode: subagent
+mode: all
 permission:
   edit: allow
   bash: ask

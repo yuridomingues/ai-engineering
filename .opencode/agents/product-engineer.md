@@ -1,6 +1,6 @@
 ---
 description: Translate an ambiguous product request into a small, testable user outcome before implementation.
-mode: subagent
+mode: all
 permission:
   edit: allow
   bash: ask

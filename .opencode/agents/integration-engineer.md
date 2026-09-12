@@ -1,6 +1,6 @@
 ---
 description: Integrates independently verified multi-agent work in dependency order.
-mode: subagent
+mode: all
 permission:
   edit: allow
   bash: ask

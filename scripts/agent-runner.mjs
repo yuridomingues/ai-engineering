@@ -8,6 +8,10 @@ function option(name){const i=args.indexOf(name);return i>=0?args[i+1]:undefined
 function has(name){return args.includes(name);}
 async function exists(file){try{await access(file);return true;}catch{return false;}}
 function quote(value){return "'" + String(value).replaceAll("'", "'\\''") + "'";}
+function commandExists(command){
+  const result=spawnSync(command,["--version"],{encoding:"utf8",stdio:["ignore","pipe","pipe"]});
+  return !result.error&&result.status===0;
+}
 
 const provider=option("--provider");
 const cwd=path.resolve(option("--cwd")??".");
@@ -15,13 +19,14 @@ const promptFile=option("--prompt-file");
 const promptInline=option("--prompt");
 const model=option("--model");
 const agent=option("--agent");
+const binary=option("--binary");
 const execute=has("--execute");
 
 if(!provider||(!promptFile&&!promptInline)){
   console.error(
     "Usage:\n"+
-    "  node scripts/agent-runner.mjs --provider cursor --cwd <dir> --prompt-file <file> [--model <id>] [--execute]\n"+
-    "  node scripts/agent-runner.mjs --provider opencode --cwd <dir> --prompt-file <file> [--agent <name>] [--model <provider/model>] [--execute]\n"+
+    "  node scripts/agent-runner.mjs --provider cursor --cwd <dir> --prompt-file <file> [--model <id>] [--binary <cmd>] [--execute]\n"+
+    "  node scripts/agent-runner.mjs --provider opencode --cwd <dir> --prompt-file <file> [--agent <name>] [--model <provider/model>] [--binary <cmd>] [--execute]\n"+
     "\nDry-run is the default. --execute actually launches the provider CLI."
   );
   process.exit(2);
@@ -37,11 +42,11 @@ let command;
 let cliArgs;
 
 if(provider==="cursor"){
-  command="agent";
+  command=binary??"agent";
   cliArgs=["-p",prompt,"--output-format","text"];
   if(model) cliArgs.push("--model",model);
 }else if(provider==="opencode"){
-  command="opencode";
+  command=binary??(commandExists("opencode2")?"opencode2":"opencode");
   cliArgs=["run","--dir",cwd];
   if(agent) cliArgs.push("--agent",agent);
   if(model) cliArgs.push("--model",model);
@@ -53,6 +58,7 @@ if(provider==="cursor"){
 console.log("Provider: "+provider);
 console.log("Workspace: "+cwd);
 console.log("Mode: "+(execute?"EXECUTE":"DRY-RUN"));
+console.log("Binary: "+command);
 console.log("Command: "+[command,...cliArgs].map(quote).join(" "));
 
 if(!execute){

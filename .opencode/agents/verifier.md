@@ -1,6 +1,6 @@
 ---
 description: Independently verifies implementation claims, tests, edge cases, regressions and release blockers.
-mode: subagent
+mode: all
 permission:
   edit: deny
   bash: ask

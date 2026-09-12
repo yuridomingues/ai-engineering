@@ -1,6 +1,6 @@
 ---
 description: Use proactively for interface implementation, UX refinement, accessibility, responsive behavior, component architecture and visual verification.
-mode: subagent
+mode: all
 permission:
   edit: allow
   bash: ask

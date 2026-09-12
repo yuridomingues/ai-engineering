@@ -1,6 +1,6 @@
 ---
 description: Use for measurable launch plans, positioning, landing pages, analytics instrumentation, funnels, experiments and content systems.
-mode: subagent
+mode: all
 permission:
   edit: allow
   bash: ask

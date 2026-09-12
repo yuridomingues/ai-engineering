@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "name": "arena-playbook",
+  "tasks": [
+    {
+      "id": "rubric",
+      "title": "Freeze arena problem and rubric",
+      "goal": "Define one shared problem statement, constraints and weighted judging rubric before candidate outputs exist.",
+      "agent": "planner",
+      "dependsOn": [],
+      "risk": "medium",
+      "acceptance": [
+        "Candidates receive equivalent context.",
+        "Judging criteria are fixed before candidate outputs are compared."
+      ],
+      "verification": [
+        "Review rubric for correctness, simplicity, maintainability, risk, testability and task-specific priorities."
+      ]
+    },
+    {
+      "id": "candidate-a",
+      "title": "Produce independent candidate A",
+      "goal": "Develop one complete candidate approach in isolation.",
+      "agent": "product-engineer",
+      "dependsOn": [
+        "rubric"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Candidate includes design, tradeoffs, risks and verification plan.",
+        "Candidate did not consume another candidate's output."
+      ],
+      "verification": [
+        "Store candidate artifact/worktree ref."
+      ]
+    },
+    {
+      "id": "candidate-b",
+      "title": "Produce independent candidate B",
+      "goal": "Develop a second complete candidate approach in isolation.",
+      "agent": "product-engineer",
+      "dependsOn": [
+        "rubric"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Candidate includes design, tradeoffs, risks and verification plan.",
+        "Candidate did not consume another candidate's output."
+      ],
+      "verification": [
+        "Store candidate artifact/worktree ref."
+      ]
+    },
+    {
+      "id": "candidate-c",
+      "title": "Produce independent candidate C",
+      "goal": "Develop a third complete candidate approach in isolation.",
+      "agent": "product-engineer",
+      "dependsOn": [
+        "rubric"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Candidate includes design, tradeoffs, risks and verification plan.",
+        "Candidate did not consume another candidate's output."
+      ],
+      "verification": [
+        "Store candidate artifact/worktree ref."
+      ]
+    },
+    {
+      "id": "judge",
+      "title": "Judge candidates against frozen rubric",
+      "goal": "Compare independent candidates by evidence and rubric rather than majority vote or author confidence.",
+      "agent": "planner",
+      "dependsOn": [
+        "candidate-a",
+        "candidate-b",
+        "candidate-c"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "Each candidate is scored against the same rubric.",
+        "Chosen direction and rejected tradeoffs are explicit."
+      ],
+      "verification": [
+        "Publish a comparison artifact before integration."
+      ]
+    },
+    {
+      "id": "integrate",
+      "title": "Integrate one coherent direction",
+      "goal": "Implement or synthesize the winning direction without blindly merging incompatible designs.",
+      "agent": "integration-engineer",
+      "dependsOn": [
+        "judge"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "Integrated result has one coherent architecture.",
+        "Unchosen candidate assumptions do not leak into the implementation."
+      ],
+      "verification": [
+        "Inspect final architecture against the winning rubric."
+      ]
+    },
+    {
+      "id": "verify",
+      "title": "Verify arena result",
+      "goal": "Run deterministic and real-product verification of the integrated result.",
+      "agent": "runtime-verifier",
+      "dependsOn": [
+        "integrate"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "Integrated result satisfies original acceptance criteria and rubric."
+      ],
+      "verification": [
+        "Produce passing structured evidence."
+      ]
+    },
+    {
+      "id": "adversarial-review",
+      "title": "Attack arena winner",
+      "goal": "Try to falsify the winning design after integration.",
+      "agent": "adversarial-reviewer",
+      "dependsOn": [
+        "verify"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "Blocking counterexamples are resolved or explicitly escalated."
+      ],
+      "verification": [
+        "Record counterexamples attempted and final disposition."
+      ]
+    }
+  ]
+}
