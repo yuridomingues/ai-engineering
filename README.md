@@ -129,7 +129,9 @@ Isso faz o sistema acumular capacidade sem acumular instruções frágeis.
 ├── scripts/
 │   ├── taskgraph.mjs
 │   ├── repo-readiness.mjs
-│   └── architecture-lint.mjs
+│   ├── architecture-lint.mjs
+│   ├── worktree.mjs
+│   └── agent-runner.mjs
 └── templates/
 ```
 
@@ -163,6 +165,22 @@ node scripts/taskgraph.mjs ready orchestration/example.taskgraph.json
 ```
 
 O estado de execução é separado da especificação, permitindo retries e múltiplos workers sem reescrever o plano.
+
+Para trabalho paralelo:
+
+```bash
+node scripts/worktree.mjs create backend main
+
+node scripts/agent-runner.mjs \
+  --provider opencode \
+  --cwd ../meu-projeto.worktrees/backend \
+  --agent backend-engineer \
+  --prompt-file task.md
+```
+
+O runner é **dry-run por padrão**. Só invoca o provedor quando você adiciona `--execute`.
+
+Uma tarefa só pode ser marcada como concluída com JSON de evidência estruturada e `result: "pass"`.
 
 ---
 
@@ -205,6 +223,48 @@ Use quando o problema é de design ou arquitetura e há mais valor em diversidad
 Um agente constrói; outro tenta quebrar. Melhor que pedir ao mesmo agente para certificar o próprio trabalho.
 
 Veja `docs/multi-agent-systems.md`.
+
+---
+
+## Equipe padrão de agentes
+
+A V2 separa execução de julgamento e integração:
+
+| Papel | Responsabilidade | Escrita por padrão |
+|---|---|---:|
+| planner | contrato, decomposição, DAG, critérios de aceite | não |
+| frontend-engineer | implementação de interface | sim |
+| backend-engineer | serviços, dados e integrações | sim |
+| ai-engineer | LLMs, RAG, tools, MCP e evals | sim |
+| product-engineer | coerência entre requisito e produto | sim |
+| runtime-verifier | prova o comportamento no artefato real | não |
+| adversarial-reviewer | tenta falsificar as premissas e achar contraexemplos | não |
+| security-auditor | revisão defensiva e limites de privilégio | não |
+| integration-engineer | integra unidades já verificadas em ordem de dependência | sim |
+| docs-gardener | mantém mapas, docs e referências alinhados ao código | sim |
+
+Os especialistas não precisam ser usados todos ao mesmo tempo. `engineering-mode` escolhe a menor topologia que justifica o custo.
+
+### Fluxo multiagente operacional
+
+```text
+planner
+  ↓
+task DAG / contracts
+  ↓
+coordinator
+  ├─ worker A → isolated worktree ─┐
+  ├─ worker B → isolated worktree ─┼→ independent verification
+  └─ worker C → isolated worktree ─┘
+                                   ↓
+                             evidence gate
+                                   ↓
+                         integration engineer
+                                   ↓
+                            cross-task verify
+```
+
+O control plane local fica em `orchestration/` e os comandos estão documentados em `orchestration/README.md`.
 
 ---
 
