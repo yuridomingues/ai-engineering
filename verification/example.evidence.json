@@ -1,0 +1,18 @@
+{
+  "claim": "A profile settings change survives reload exactly once.",
+  "ref": "example-ref",
+  "method": "browser flow plus persistence readback",
+  "result": "pass",
+  "commands": [
+    "npm run verify:profile-settings"
+  ],
+  "artifacts": [
+    "artifacts/profile-settings.png",
+    "artifacts/profile-settings-db.json"
+  ],
+  "sideEffects": [
+    "One persisted settings row reflects the submitted value."
+  ],
+  "limitations": [],
+  "timestamp": "2026-09-12T00:00:00Z"
+}

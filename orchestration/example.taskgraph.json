@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "name": "profile-settings-feature",
+  "tasks": [
+    {
+      "id": "contract",
+      "title": "Define profile settings contract",
+      "goal": "Create the canonical data shape and boundary validation.",
+      "dependsOn": [],
+      "risk": "medium",
+      "acceptance": [
+        "Schema is explicit and backward-compatible for existing reads."
+      ],
+      "verification": [
+        "Run schema/unit tests."
+      ]
+    },
+    {
+      "id": "backend",
+      "title": "Implement profile settings service",
+      "goal": "Persist and retrieve settings through the canonical contract.",
+      "dependsOn": [
+        "contract"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Writes are idempotent.",
+        "Invalid external input is rejected at the boundary."
+      ],
+      "verification": [
+        "Run service integration tests.",
+        "Read back persisted values."
+      ]
+    },
+    {
+      "id": "frontend",
+      "title": "Build settings UI",
+      "goal": "Expose settings through the user interface.",
+      "dependsOn": [
+        "contract"
+      ],
+      "risk": "low",
+      "acceptance": [
+        "Loading, success and error states are visible.",
+        "Keyboard interaction works."
+      ],
+      "verification": [
+        "Run component checks.",
+        "Drive the settings flow in the real app."
+      ]
+    },
+    {
+      "id": "e2e",
+      "title": "Verify full settings flow",
+      "goal": "Prove UI -> API -> persistence behavior end to end.",
+      "dependsOn": [
+        "backend",
+        "frontend"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "A user change survives reload exactly once."
+      ],
+      "verification": [
+        "Run browser automation and persistence readback.",
+        "Capture evidence artifact."
+      ]
+    }
+  ]
+}

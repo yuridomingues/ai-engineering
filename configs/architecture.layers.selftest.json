@@ -1,0 +1,29 @@
+{
+  "projectRoot": "..",
+  "root": "fixtures/architecture-lint/src",
+  "extensions": [
+    ".js"
+  ],
+  "layers": [
+    {
+      "name": "domain",
+      "path": "domain",
+      "mayDependOn": []
+    },
+    {
+      "name": "application",
+      "path": "application",
+      "mayDependOn": [
+        "domain"
+      ]
+    },
+    {
+      "name": "interface",
+      "path": "interface",
+      "mayDependOn": [
+        "domain",
+        "application"
+      ]
+    }
+  ]
+}

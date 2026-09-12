@@ -18,16 +18,10 @@ const requested = new Set(
 );
 
 if (requested.size === 0) requested.add("all");
-
 const wants = (name) => requested.has("all") || requested.has(name);
 
 async function exists(file) {
-  try {
-    await access(file);
-    return true;
-  } catch {
-    return false;
-  }
+  try { await access(file); return true; } catch { return false; }
 }
 
 const actions = [];
@@ -39,7 +33,6 @@ async function copyFileSafe(source, destination, { neverOverwrite = false } = {}
     skipped.push(path.relative(target, destination) || destination);
     return;
   }
-
   await mkdir(path.dirname(destination), { recursive: true });
   await cp(source, destination, { force: true });
   actions.push(path.relative(target, destination) || destination);
@@ -47,26 +40,21 @@ async function copyFileSafe(source, destination, { neverOverwrite = false } = {}
 
 async function copyTree(sourceDir, destinationDir) {
   if (!(await exists(sourceDir))) return;
-
   await mkdir(destinationDir, { recursive: true });
-  const entries = await readdir(sourceDir);
 
-  for (const entry of entries) {
+  for (const entry of await readdir(sourceDir)) {
     const source = path.join(sourceDir, entry);
     const destination = path.join(destinationDir, entry);
     const info = await stat(source);
 
-    if (info.isDirectory()) {
-      await copyTree(source, destination);
-    } else {
-      await copyFileSafe(source, destination);
-    }
+    if (info.isDirectory()) await copyTree(source, destination);
+    else await copyFileSafe(source, destination);
   }
 }
 
 await mkdir(target, { recursive: true });
 
-// AGENTS.md is deliberately never overwritten. Existing repository knowledge wins.
+// Repository-specific knowledge wins. Never overwrite an existing AGENTS.md.
 await copyFileSafe(
   path.join(ROOT, "AGENTS.md"),
   path.join(target, "AGENTS.md"),
@@ -83,6 +71,22 @@ if (wants("portable") || wants("cursor")) {
 if (wants("portable")) {
   await copyTree(path.join(ROOT, "templates"), path.join(target, ".ai", "templates"));
   await copyTree(path.join(ROOT, "evals"), path.join(target, ".ai", "evals"));
+  await copyTree(path.join(ROOT, "orchestration"), path.join(target, ".ai", "orchestration"));
+  await copyTree(path.join(ROOT, "verification"), path.join(target, ".ai", "verification"));
+  await copyTree(path.join(ROOT, "configs"), path.join(target, ".ai", "configs"));
+
+  for (const script of [
+    "taskgraph.mjs",
+    "repo-readiness.mjs",
+    "architecture-lint.mjs",
+    "worktree.mjs",
+    "agent-runner.mjs"
+  ]) {
+    await copyFileSafe(
+      path.join(ROOT, "scripts", script),
+      path.join(target, ".ai", "bin", script)
+    );
+  }
 }
 
 if (wants("cursor")) {
@@ -118,5 +122,7 @@ for (const item of actions) console.log("  + " + item);
 if (skipped.length > 0) {
   console.log("Skipped existing files: " + skipped.length);
   for (const item of skipped) console.log("  = " + item);
-  if (!force) console.log("Use --force to overwrite adapter files. AGENTS.md is still preserved.");
+  if (!force) {
+    console.log("Use --force to overwrite adapter files. AGENTS.md is still preserved.");
+  }
 }
