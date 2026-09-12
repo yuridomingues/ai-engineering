@@ -79,7 +79,8 @@ if (wants("portable")) {
     "taskgraph.mjs",
     "repo-readiness.mjs",
     "architecture-lint.mjs",
-    "worktree.mjs"
+    "worktree.mjs",
+    "agent-runner.mjs"
   ]) {
     await copyFileSafe(
       path.join(ROOT, "scripts", script),
