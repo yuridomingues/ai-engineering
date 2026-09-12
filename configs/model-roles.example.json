@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "note": "Map capabilities to models available in your host. Keep concrete model names outside reusable workflows.",
+  "roles": {
+    "planner": {
+      "needs": [
+        "reasoning",
+        "product-judgment",
+        "long-context"
+      ]
+    },
+    "mechanicalWorker": {
+      "needs": [
+        "coding",
+        "speed",
+        "tool-use"
+      ]
+    },
+    "deepWorker": {
+      "needs": [
+        "debugging",
+        "architecture",
+        "tool-use"
+      ]
+    },
+    "verifier": {
+      "needs": [
+        "independent-reasoning",
+        "tool-use",
+        "skepticism"
+      ]
+    },
+    "visualEvaluator": {
+      "needs": [
+        "vision",
+        "ux-judgment",
+        "browser-use"
+      ]
+    },
+    "securityReviewer": {
+      "needs": [
+        "security-review",
+        "precision"
+      ],
+      "defaultPermissions": "read-only"
+    }
+  }
+}

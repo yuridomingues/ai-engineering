@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "execution": {
+    "maxParallelWorkers": 4,
+    "maxIterationsPerTask": 8,
+    "defaultTimeoutMinutes": 90,
+    "requireIsolatedWorkspaceForParallel": true
+  },
+  "verification": {
+    "requireEvidenceForCompletion": true,
+    "levelsByRisk": {
+      "low": [
+        "static",
+        "local"
+      ],
+      "medium": [
+        "static",
+        "local",
+        "boundary"
+      ],
+      "high": [
+        "static",
+        "local",
+        "boundary",
+        "runtime",
+        "adversarial"
+      ]
+    }
+  },
+  "approvals": {
+    "alwaysRequireHuman": [
+      "production-deploy",
+      "destructive-migration",
+      "secret-rotation",
+      "external-publish"
+    ]
+  }
+}

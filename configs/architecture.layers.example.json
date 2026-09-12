@@ -1,0 +1,40 @@
+{
+  "projectRoot": "..",
+  "root": "src",
+  "extensions": [
+    ".ts",
+    ".tsx",
+    ".js",
+    ".jsx"
+  ],
+  "layers": [
+    {
+      "name": "domain",
+      "path": "domain",
+      "mayDependOn": []
+    },
+    {
+      "name": "application",
+      "path": "application",
+      "mayDependOn": [
+        "domain"
+      ]
+    },
+    {
+      "name": "infrastructure",
+      "path": "infrastructure",
+      "mayDependOn": [
+        "domain",
+        "application"
+      ]
+    },
+    {
+      "name": "interface",
+      "path": "interface",
+      "mayDependOn": [
+        "domain",
+        "application"
+      ]
+    }
+  ]
+}
