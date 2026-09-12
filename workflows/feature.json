@@ -1,0 +1,153 @@
+{
+  "id": "feature",
+  "version": 1,
+  "description": "Verification-first feature delivery with explicit design, tests, product proof and independent review.",
+  "nodes": [
+    {
+      "id": "frame",
+      "agent": "orchestrator",
+      "mode": "single",
+      "dependsOn": [],
+      "objective": "Turn the request into outcome, acceptance criteria, non-goals, risk and verification plan.",
+      "acceptance": [
+        "Acceptance criteria are observable and falsifiable.",
+        "Non-goals and risk are explicit."
+      ],
+      "outputs": [
+        "exec-plan"
+      ]
+    },
+    {
+      "id": "investigate",
+      "agent": "researcher",
+      "mode": "single",
+      "dependsOn": [
+        "frame"
+      ],
+      "objective": "Map relevant code, history, docs, existing patterns and constraints before edits.",
+      "acceptance": [
+        "Relevant ownership and call paths are identified.",
+        "Unknowns that can change the design are resolved or listed."
+      ],
+      "outputs": [
+        "context-map"
+      ]
+    },
+    {
+      "id": "architect",
+      "agent": "architecture-reviewer",
+      "mode": "gate",
+      "dependsOn": [
+        "investigate"
+      ],
+      "objective": "Settle boundaries, data shapes, state ownership and dependency direction.",
+      "acceptance": [
+        "Interfaces and invariants are explicit.",
+        "The design does not add avoidable machinery."
+      ],
+      "outputs": [
+        "architecture-decision"
+      ]
+    },
+    {
+      "id": "test-first",
+      "agent": "test-engineer",
+      "mode": "single",
+      "dependsOn": [
+        "architect"
+      ],
+      "objective": "Create failing or baseline tests for the requested behavior where feasible.",
+      "acceptance": [
+        "The test fails or baseline evidence is captured before implementation.",
+        "The test represents the acceptance criteria rather than implementation details."
+      ],
+      "outputs": [
+        "test-evidence"
+      ]
+    },
+    {
+      "id": "implement",
+      "agent": "product-engineer",
+      "mode": "single",
+      "dependsOn": [
+        "test-first"
+      ],
+      "objective": "Implement the smallest coherent change that satisfies the architecture and tests.",
+      "acceptance": [
+        "Change is scoped to the requested outcome.",
+        "No unrelated refactor is introduced."
+      ],
+      "outputs": [
+        "diff"
+      ]
+    },
+    {
+      "id": "static-verify",
+      "agent": "verifier",
+      "mode": "gate",
+      "dependsOn": [
+        "implement"
+      ],
+      "objective": "Run deterministic repository checks.",
+      "acceptance": [
+        "Relevant tests/typecheck/lint/build pass or failures are documented as blockers."
+      ],
+      "outputs": [
+        "static-evidence"
+      ]
+    },
+    {
+      "id": "product-verify",
+      "agent": "product-verifier",
+      "mode": "gate",
+      "dependsOn": [
+        "implement"
+      ],
+      "objective": "Operate the real product or closest faithful environment and prove the user-visible outcome.",
+      "acceptance": [
+        "Acceptance criteria are demonstrated with runtime evidence.",
+        "Observed failures are not hand-waved."
+      ],
+      "outputs": [
+        "product-evidence"
+      ]
+    },
+    {
+      "id": "interrogate",
+      "agents": [
+        "architecture-reviewer",
+        "security-auditor",
+        "verifier"
+      ],
+      "mode": "fanout",
+      "dependsOn": [
+        "static-verify",
+        "product-verify"
+      ],
+      "objective": "Independently try to falsify correctness, architecture and safety.",
+      "acceptance": [
+        "Independent findings are recorded before synthesis.",
+        "Blocking findings are explicit."
+      ],
+      "outputs": [
+        "review-findings"
+      ]
+    },
+    {
+      "id": "integrate",
+      "agent": "integrator",
+      "mode": "fanin",
+      "dependsOn": [
+        "interrogate"
+      ],
+      "objective": "Resolve findings, rerun affected gates and prepare reviewable closeout.",
+      "acceptance": [
+        "All blocking findings are resolved or escalated.",
+        "Final evidence maps to each acceptance criterion."
+      ],
+      "outputs": [
+        "closeout"
+      ]
+    }
+  ]
+}

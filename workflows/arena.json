@@ -1,0 +1,90 @@
+{
+  "id": "arena",
+  "version": 1,
+  "description": "Parallel isolated proposals followed by rubric-based synthesis and verification.",
+  "nodes": [
+    {
+      "id": "frame",
+      "agent": "orchestrator",
+      "mode": "single",
+      "dependsOn": [],
+      "objective": "Define one shared problem statement, constraints and judging rubric.",
+      "acceptance": [
+        "All candidates receive equivalent task context.",
+        "Rubric is fixed before candidate outputs are inspected."
+      ],
+      "outputs": [
+        "arena-rubric"
+      ]
+    },
+    {
+      "id": "candidates",
+      "agents": [
+        "product-engineer"
+      ],
+      "replicas": 3,
+      "mode": "fanout",
+      "dependsOn": [
+        "frame"
+      ],
+      "objective": "Produce independent candidate designs or implementations in isolated contexts/worktrees.",
+      "acceptance": [
+        "Candidates do not read each other's outputs before completion.",
+        "Each candidate provides tradeoffs and evidence."
+      ],
+      "outputs": [
+        "candidate-artifacts"
+      ]
+    },
+    {
+      "id": "judge",
+      "agent": "architecture-reviewer",
+      "mode": "fanin",
+      "dependsOn": [
+        "candidates"
+      ],
+      "objective": "Compare candidates against the predeclared rubric, not popularity.",
+      "acceptance": [
+        "Strengths and failures are mapped to rubric criteria.",
+        "Chosen direction is evidence-backed."
+      ],
+      "outputs": [
+        "judgment"
+      ]
+    },
+    {
+      "id": "integrate",
+      "agent": "integrator",
+      "mode": "single",
+      "dependsOn": [
+        "judge"
+      ],
+      "objective": "Implement or synthesize the chosen direction without carrying incompatible parts.",
+      "acceptance": [
+        "Integrated result has one coherent architecture."
+      ],
+      "outputs": [
+        "diff"
+      ]
+    },
+    {
+      "id": "verify",
+      "agents": [
+        "verifier",
+        "product-verifier",
+        "security-auditor"
+      ],
+      "mode": "fanout",
+      "dependsOn": [
+        "integrate"
+      ],
+      "objective": "Verify the integrated result independently.",
+      "acceptance": [
+        "Blocking verification and security findings are resolved or escalated."
+      ],
+      "outputs": [
+        "closeout"
+      ]
+    }
+  ]
+}

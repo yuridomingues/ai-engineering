@@ -1,0 +1,138 @@
+{
+  "id": "bugfix",
+  "version": 1,
+  "description": "Reproduce-first bug fixing with regression evidence and independent verification.",
+  "nodes": [
+    {
+      "id": "frame",
+      "agent": "orchestrator",
+      "mode": "single",
+      "dependsOn": [],
+      "objective": "Define symptom, expected behavior, scope and evidence needed.",
+      "acceptance": [
+        "The reported symptom and expected behavior are distinct.",
+        "A reproduction strategy exists."
+      ],
+      "outputs": [
+        "exec-plan"
+      ]
+    },
+    {
+      "id": "reproduce",
+      "agent": "product-verifier",
+      "mode": "gate",
+      "dependsOn": [
+        "frame"
+      ],
+      "objective": "Reproduce the defect before changing code.",
+      "acceptance": [
+        "Failure is reproduced with exact steps or the inability to reproduce is documented.",
+        "Failure evidence is captured."
+      ],
+      "outputs": [
+        "failure-evidence"
+      ]
+    },
+    {
+      "id": "root-cause",
+      "agent": "researcher",
+      "mode": "single",
+      "dependsOn": [
+        "reproduce"
+      ],
+      "objective": "Trace the failing path to a causal explanation.",
+      "acceptance": [
+        "Cause is supported by code/runtime evidence.",
+        "Adjacent plausible causes were considered."
+      ],
+      "outputs": [
+        "root-cause"
+      ]
+    },
+    {
+      "id": "regression-test",
+      "agent": "test-engineer",
+      "mode": "gate",
+      "dependsOn": [
+        "root-cause"
+      ],
+      "objective": "Encode the bug as a failing regression test when feasible.",
+      "acceptance": [
+        "Test fails for the reproduced reason before the fix."
+      ],
+      "outputs": [
+        "regression-test"
+      ]
+    },
+    {
+      "id": "implement",
+      "agent": "product-engineer",
+      "mode": "single",
+      "dependsOn": [
+        "regression-test"
+      ],
+      "objective": "Apply the smallest causal fix.",
+      "acceptance": [
+        "Fix addresses the root cause, not only the visible symptom.",
+        "Unrelated code is unchanged."
+      ],
+      "outputs": [
+        "diff"
+      ]
+    },
+    {
+      "id": "verify",
+      "agents": [
+        "verifier",
+        "product-verifier"
+      ],
+      "mode": "fanout",
+      "dependsOn": [
+        "implement"
+      ],
+      "objective": "Run deterministic checks and repeat the original reproduction.",
+      "acceptance": [
+        "Regression test passes.",
+        "Original reproduction no longer fails.",
+        "No relevant deterministic gate regressed."
+      ],
+      "outputs": [
+        "verification-evidence"
+      ]
+    },
+    {
+      "id": "interrogate",
+      "agents": [
+        "architecture-reviewer",
+        "security-auditor"
+      ],
+      "mode": "fanout",
+      "dependsOn": [
+        "verify"
+      ],
+      "objective": "Challenge the fix for hidden regressions, boundary violations and risk.",
+      "acceptance": [
+        "Blocking findings are explicit."
+      ],
+      "outputs": [
+        "review-findings"
+      ]
+    },
+    {
+      "id": "integrate",
+      "agent": "integrator",
+      "mode": "fanin",
+      "dependsOn": [
+        "interrogate"
+      ],
+      "objective": "Resolve findings and package evidence for merge.",
+      "acceptance": [
+        "Failure and resolution evidence are both linked.",
+        "All blockers are closed or escalated."
+      ],
+      "outputs": [
+        "closeout"
+      ]
+    }
+  ]
+}

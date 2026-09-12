@@ -1,0 +1,121 @@
+{
+  "id": "refactor",
+  "version": 1,
+  "description": "Behavior-preserving structural change with baseline proof and architecture constraints.",
+  "nodes": [
+    {
+      "id": "baseline",
+      "agent": "product-verifier",
+      "mode": "gate",
+      "dependsOn": [],
+      "objective": "Capture existing externally observable behavior and relevant tests/metrics.",
+      "acceptance": [
+        "Behavioral baseline is explicit.",
+        "Known existing failures are separated from refactor regressions."
+      ],
+      "outputs": [
+        "baseline-evidence"
+      ]
+    },
+    {
+      "id": "architect",
+      "agent": "architecture-reviewer",
+      "mode": "gate",
+      "dependsOn": [
+        "baseline"
+      ],
+      "objective": "Define target boundaries and migration sequence.",
+      "acceptance": [
+        "Target dependency direction is explicit.",
+        "Legacy surface deletion or compatibility path is planned."
+      ],
+      "outputs": [
+        "architecture-decision"
+      ]
+    },
+    {
+      "id": "safety-tests",
+      "agent": "test-engineer",
+      "mode": "gate",
+      "dependsOn": [
+        "architect"
+      ],
+      "objective": "Strengthen behavior-preserving coverage before movement.",
+      "acceptance": [
+        "Critical behavior is protected by deterministic tests or documented runtime evidence."
+      ],
+      "outputs": [
+        "test-evidence"
+      ]
+    },
+    {
+      "id": "refactor",
+      "agent": "product-engineer",
+      "mode": "single",
+      "dependsOn": [
+        "safety-tests"
+      ],
+      "objective": "Perform the smallest staged structural change.",
+      "acceptance": [
+        "Public behavior remains unchanged unless explicitly scoped.",
+        "Dead legacy paths are removed when safe."
+      ],
+      "outputs": [
+        "diff"
+      ]
+    },
+    {
+      "id": "verify",
+      "agents": [
+        "verifier",
+        "product-verifier"
+      ],
+      "mode": "fanout",
+      "dependsOn": [
+        "refactor"
+      ],
+      "objective": "Compare post-change behavior to the baseline and run structural checks.",
+      "acceptance": [
+        "Behavior matches baseline.",
+        "Target architecture constraints hold."
+      ],
+      "outputs": [
+        "verification-evidence"
+      ]
+    },
+    {
+      "id": "interrogate",
+      "agents": [
+        "architecture-reviewer",
+        "security-auditor"
+      ],
+      "mode": "fanout",
+      "dependsOn": [
+        "verify"
+      ],
+      "objective": "Look for hidden coupling, migration gaps and risk.",
+      "acceptance": [
+        "Blocking findings are explicit."
+      ],
+      "outputs": [
+        "review-findings"
+      ]
+    },
+    {
+      "id": "integrate",
+      "agent": "integrator",
+      "mode": "fanin",
+      "dependsOn": [
+        "interrogate"
+      ],
+      "objective": "Close findings and finalize the migration.",
+      "acceptance": [
+        "No known caller remains on an unintentionally deprecated path.",
+        "Evidence is complete."
+      ],
+      "outputs": [
+        "closeout"
+      ]
+    }
+  ]
+}
