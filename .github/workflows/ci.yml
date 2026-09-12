@@ -10,15 +10,25 @@ permissions:
   contents: read
 
 jobs:
-  doctor:
+  harness:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - name: Validate toolkit structure
         run: node scripts/doctor.mjs .
+
+      - name: Validate task DAG
+        run: node scripts/taskgraph.mjs validate orchestration/example.taskgraph.json
+
+      - name: Check agent readiness
+        run: node scripts/repo-readiness.mjs . --strict 70
+
+      - name: Self-test architecture boundaries
+        run: node scripts/architecture-lint.mjs configs/architecture.layers.selftest.json
 
   mcp-starter:
     runs-on: ubuntu-latest

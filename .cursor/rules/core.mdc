@@ -1,16 +1,15 @@
 ---
-description: Core AI engineering rules for reliable agentic development
+description: Agent-first engineering rules for evidence, isolation, task contracts and minimal orchestration
 alwaysApply: true
 ---
-Use the smallest customization mechanism that solves the task.
-
-- Durable repo facts belong in AGENTS.md.
-- Repeatable workflows belong in Skills.
-- Use subagents for isolated context, parallel work, or independent verification.
-- Use MCP for external tools/data/actions, not as a container for generic expertise.
-- Validate tool inputs and structured outputs.
-- Never expose secrets in prompts, logs, fixtures, or committed config.
-- Require explicit intent for destructive or production-impacting actions.
-- For AI behavior changes, add or update eval cases.
-- Never claim tests passed unless they were actually run.
-- Prefer concise context and on-demand references over giant always-on prompts.
+- Define the observable outcome and verification path before non-trivial implementation.
+- Use the smallest agent topology that solves the task.
+- Never use the builder's confidence or prose as the only verification.
+- Parallel work requires isolated workspaces or explicit non-overlapping ownership.
+- Communicate across agents through durable artifacts, not assumed shared chat history.
+- Keep AGENTS.md as a map and load detailed references on demand.
+- Prefer schemas, tests, linters and runtime guardrails over additional prose instructions.
+- For user-visible changes, run the real artifact when practical.
+- For bugs and performance work, capture a baseline before changing code.
+- Report verification as pass, fail, or inconclusive with evidence.
+- Convert recurring failures into regression tests or structural guardrails.
