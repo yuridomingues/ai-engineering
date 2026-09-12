@@ -60,6 +60,33 @@ function validateGraph(graph){
   return [...new Set(errors)];
 }
 
+function validateEvidence(evidence){
+  const errors=[];
+  if(!evidence||typeof evidence!=="object") return ["evidence must be a JSON object"];
+  for(const field of ["claim","ref","method","result"]){
+    if(typeof evidence[field]!=="string"||!evidence[field].trim()) errors.push(field+" is required");
+  }
+  for(const field of ["commands","artifacts","limitations"]){
+    if(!Array.isArray(evidence[field])) errors.push(field+" must be an array");
+  }
+  if(!["pass","fail","inconclusive"].includes(evidence.result)){
+    errors.push("result must be pass, fail, or inconclusive");
+  }
+  return errors;
+}
+
+async function loadPassingEvidence(file){
+  const raw=await readFile(file,"utf8");
+  let evidence;
+  try{evidence=JSON.parse(raw);}catch{throw new Error("Evidence must be valid JSON");}
+  const errors=validateEvidence(evidence);
+  if(errors.length) throw new Error("Invalid evidence: "+errors.join("; "));
+  if(evidence.result!=="pass"){
+    throw new Error("Task completion requires evidence.result=pass; got "+evidence.result);
+  }
+  return {evidence,hash:hashText(raw)};
+}
+
 async function loadGraph(file){
   const absolute=path.resolve(file);
   const raw=await readFile(absolute,"utf8");
@@ -145,7 +172,11 @@ try{
       if(item.status!=="running") throw new Error("Only running tasks can complete");
       const evidencePath=path.resolve(evidence);
       await stat(evidencePath);
-      item.status="done";item.evidence=path.relative(process.cwd(),evidencePath);item.completedAt=new Date().toISOString();
+      const verified=await loadPassingEvidence(evidencePath);
+      item.status="done";
+      item.evidence=path.relative(process.cwd(),evidencePath);
+      item.evidenceHash=verified.hash;
+      item.completedAt=new Date().toISOString();
     }else if(command==="fail"){
       if(item.status!=="running") throw new Error("Only running tasks can fail");
       item.status="failed";item.reason=option("--reason")??"unspecified";item.failedAt=new Date().toISOString();
