@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/ai-engineering/task-graph.schema.json",
+  "title": "Agent Task Graph",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "tasks"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "goal",
+          "dependsOn",
+          "acceptance",
+          "verification"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9._-]+$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "goal": {
+            "type": "string",
+            "minLength": 1
+          },
+          "dependsOn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "risk": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "acceptance": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "verification": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}
