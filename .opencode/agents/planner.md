@@ -1,6 +1,6 @@
 ---
 description: Turns ambiguous engineering intent into contracts, DAGs, acceptance criteria and verification plans.
-mode: subagent
+mode: all
 permission:
   edit: deny
   bash: ask

@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "name": "performance-playbook",
+  "tasks": [
+    {
+      "id": "baseline",
+      "title": "Measure performance baseline",
+      "goal": "Define the user/system metric and collect repeatable pre-change measurements.",
+      "agent": "runtime-verifier",
+      "dependsOn": [],
+      "risk": "medium",
+      "acceptance": [
+        "Metric, workload, environment and measurement method are explicit.",
+        "Baseline has enough repetitions or profiling evidence to be meaningful."
+      ],
+      "verification": [
+        "Store timings/profiles/traces and environment details."
+      ]
+    },
+    {
+      "id": "profile",
+      "title": "Locate dominant bottleneck",
+      "goal": "Use runtime evidence to identify where time, CPU, memory, I/O or contention is actually spent.",
+      "agent": "planner",
+      "dependsOn": [
+        "baseline"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Bottleneck claim is supported by profile/trace/metric evidence.",
+        "Optimization is aimed at dominant cost rather than intuition."
+      ],
+      "verification": [
+        "Preserve profile/trace artifact and causal explanation."
+      ]
+    },
+    {
+      "id": "hypothesis",
+      "title": "Define bounded optimization hypothesis",
+      "goal": "Choose one change with an expected measurable effect and explicit guardrails.",
+      "agent": "planner",
+      "dependsOn": [
+        "profile"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Expected metric direction and acceptance threshold are written before implementation.",
+        "Correctness/quality guardrails are explicit."
+      ],
+      "verification": [
+        "Review hypothesis against baseline evidence."
+      ]
+    },
+    {
+      "id": "optimize",
+      "title": "Implement optimization",
+      "goal": "Make the smallest change that tests the hypothesis.",
+      "agent": "product-engineer",
+      "dependsOn": [
+        "hypothesis"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Change is attributable to the stated hypothesis.",
+        "No unrelated optimization bundle obscures causality."
+      ],
+      "verification": [
+        "Inspect diff and retain rollback path."
+      ]
+    },
+    {
+      "id": "remeasure",
+      "title": "Remeasure under same conditions",
+      "goal": "Repeat the baseline method and compare distributions/profiles, not anecdotes.",
+      "agent": "runtime-verifier",
+      "dependsOn": [
+        "optimize"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "Target metric meets threshold or change is rejected.",
+        "Correctness/quality guardrails still pass."
+      ],
+      "verification": [
+        "Store before/after measurements and exact commands."
+      ]
+    },
+    {
+      "id": "adversarial-review",
+      "title": "Review performance tradeoffs",
+      "goal": "Look for hidden correctness, memory, scalability, complexity or maintainability regressions.",
+      "agent": "adversarial-reviewer",
+      "dependsOn": [
+        "remeasure"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "Performance gain survives correctness and maintainability review."
+      ],
+      "verification": [
+        "Record findings and final disposition."
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 description: Attempts to falsify correctness and safety claims through blast-radius and counterexample review.
-mode: subagent
+mode: all
 permission:
   edit: deny
   bash: ask

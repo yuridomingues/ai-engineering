@@ -1,6 +1,6 @@
 ---
 description: Use for APIs, persistence, queues, jobs, integrations and server architecture.
-mode: subagent
+mode: all
 permission:
   edit: allow
   bash: ask

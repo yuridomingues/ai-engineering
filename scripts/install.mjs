@@ -80,7 +80,8 @@ if (wants("portable")) {
     "repo-readiness.mjs",
     "architecture-lint.mjs",
     "worktree.mjs",
-    "agent-runner.mjs"
+    "agent-runner.mjs",
+    "playbook.mjs"
   ]) {
     await copyFileSafe(
       path.join(ROOT, "scripts", script),

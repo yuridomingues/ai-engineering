@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "name": "refactor-playbook",
+  "tasks": [
+    {
+      "id": "baseline",
+      "title": "Capture behavior baseline",
+      "goal": "Record current externally observable behavior and existing failures before structural changes.",
+      "agent": "runtime-verifier",
+      "dependsOn": [],
+      "risk": "medium",
+      "acceptance": [
+        "Critical behavior is represented by tests or repeatable runtime evidence.",
+        "Known pre-existing failures are separated from new regressions."
+      ],
+      "verification": [
+        "Run baseline suite/recipe and preserve evidence."
+      ]
+    },
+    {
+      "id": "target-architecture",
+      "title": "Define target architecture",
+      "goal": "Specify desired boundaries, dependency direction, migration sequence and deletion/compatibility policy.",
+      "agent": "planner",
+      "dependsOn": [
+        "baseline"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "Target boundaries and invariants are explicit.",
+        "Migration is staged and reversible or has a forward-fix plan."
+      ],
+      "verification": [
+        "Run architecture lint/design review where available."
+      ]
+    },
+    {
+      "id": "characterization",
+      "title": "Strengthen characterization coverage",
+      "goal": "Add tests or verification around behavior that must remain unchanged.",
+      "agent": "verifier",
+      "dependsOn": [
+        "target-architecture"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Critical behavior is protected before movement."
+      ],
+      "verification": [
+        "Run characterization tests before refactoring."
+      ]
+    },
+    {
+      "id": "refactor",
+      "title": "Perform staged structural change",
+      "goal": "Move code toward target boundaries while preserving scoped behavior.",
+      "agent": "product-engineer",
+      "dependsOn": [
+        "characterization"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "Public behavior remains unchanged unless explicitly scoped.",
+        "Dead legacy paths are removed when safe."
+      ],
+      "verification": [
+        "Inspect dependency changes and migration state."
+      ]
+    },
+    {
+      "id": "static-verify",
+      "title": "Run structural and deterministic checks",
+      "goal": "Run tests, type/lint gates and architecture rules after refactor.",
+      "agent": "verifier",
+      "dependsOn": [
+        "refactor"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Characterization and architecture checks pass."
+      ],
+      "verification": [
+        "Produce exact command evidence."
+      ]
+    },
+    {
+      "id": "behavior-compare",
+      "title": "Compare real behavior to baseline",
+      "goal": "Replay representative runtime paths and compare against pre-refactor evidence.",
+      "agent": "runtime-verifier",
+      "dependsOn": [
+        "refactor"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "Scoped behavior matches baseline.",
+        "Any intended behavior change is separately documented and verified."
+      ],
+      "verification": [
+        "Run the same baseline recipe and compare artifacts."
+      ]
+    },
+    {
+      "id": "architecture-review",
+      "title": "Review target architecture attainment",
+      "goal": "Check for hidden coupling, compatibility residue and boundary violations.",
+      "agent": "adversarial-reviewer",
+      "dependsOn": [
+        "static-verify",
+        "behavior-compare"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "No known caller remains on unintentionally deprecated paths.",
+        "Blocking structural findings are resolved."
+      ],
+      "verification": [
+        "Review dependency graph, changed interfaces and migration state."
+      ]
+    },
+    {
+      "id": "integrate",
+      "title": "Finalize refactor",
+      "goal": "Resolve findings and package verified structural change.",
+      "agent": "integration-engineer",
+      "dependsOn": [
+        "architecture-review"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Target invariants and preserved behavior both have evidence."
+      ],
+      "verification": [
+        "Produce final evidence and residual-risk note."
+      ]
+    }
+  ]
+}

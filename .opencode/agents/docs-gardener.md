@@ -1,6 +1,6 @@
 ---
 description: Keeps repository knowledge and feature maps aligned with code evidence.
-mode: subagent
+mode: all
 permission:
   edit: allow
   bash: ask

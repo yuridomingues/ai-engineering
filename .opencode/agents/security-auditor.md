@@ -1,6 +1,6 @@
 ---
 description: Do not edit files unless the parent task explicitly asks for a remediation patch. Prefer review-only behavior.
-mode: subagent
+mode: all
 permission:
   edit: deny
   bash: ask

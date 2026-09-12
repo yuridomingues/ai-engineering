@@ -184,6 +184,28 @@ Uma tarefa só pode ser marcada como concluída com JSON de evidência estrutura
 
 ---
 
+## Playbooks executáveis por tipo de trabalho
+
+O control plane agora também tem DAGs reutilizáveis em `orchestration/playbooks/`:
+
+- `feature`: contrato, investigação, arquitetura, baseline, implementação, verificação estática/runtime, review adversarial e integração
+- `bugfix`: reprodução antes do fix, causa raiz, regressão, replay do mesmo sintoma e review
+- `refactor`: baseline comportamental, arquitetura alvo, characterization tests e comparação pós-mudança
+- `arena`: candidatos independentes em paralelo, rubric congelada antes da execução e síntese coerente
+- `performance`: baseline, profiling, hipótese, mudança isolada e re-medição nas mesmas condições
+
+Instancie um playbook em vez de reescrever o processo:
+
+```bash
+node scripts/playbook.mjs init feature \
+  --name billing-export \
+  --out .agent/billing-export.taskgraph.json
+
+node scripts/taskgraph.mjs validate .agent/billing-export.taskgraph.json
+```
+
+O JSON gerado é um ponto de partida: os critérios genéricos devem ser concretizados para o projeto antes de execução autônoma.
+
 ## O que vai em cada mecanismo
 
 | Necessidade | Mecanismo |

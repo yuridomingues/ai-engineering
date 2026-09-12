@@ -9,6 +9,19 @@ The system deliberately separates **coordination** from **model execution**:
 - `agent-runner.mjs`: thin Cursor/OpenCode process adapter
 - verification evidence: owns completion proof
 
+
+## Reusable playbooks
+
+For common engineering shapes, start from `orchestration/playbooks/` instead of inventing a new process:
+
+```bash
+node scripts/playbook.mjs list
+node scripts/playbook.mjs init feature --name my-feature --out .agent/my-feature.taskgraph.json
+node scripts/taskgraph.mjs validate .agent/my-feature.taskgraph.json
+```
+
+The playbooks remain ordinary task graphs and therefore use the same claim, lock, evidence and retry semantics described below. Customize their generic acceptance criteria for the actual project before unattended execution.
+
 ## End-to-end multi-agent flow
 
 ### 1. Planner creates or edits a task graph
@@ -52,7 +65,7 @@ Do not include unnecessary repository history.
 
 ### 5. Launch a provider
 
-The runner is **dry-run by default**.
+The runner is **dry-run by default**. For OpenCode it prefers the separately installed `opencode2` beta when present and otherwise falls back to `opencode`; use `--binary` to pin a specific executable.
 
 Cursor:
 

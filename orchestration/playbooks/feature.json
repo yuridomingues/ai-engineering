@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "name": "feature-playbook",
+  "tasks": [
+    {
+      "id": "frame",
+      "title": "Frame observable outcome",
+      "goal": "Define user/system outcome, acceptance criteria, non-goals, risk and verification strategy before implementation.",
+      "agent": "planner",
+      "dependsOn": [],
+      "risk": "medium",
+      "acceptance": [
+        "Acceptance criteria are observable and falsifiable.",
+        "Non-goals and rollback/escalation conditions are explicit."
+      ],
+      "verification": [
+        "Review the work contract or exec plan for outcome, evidence and risk."
+      ]
+    },
+    {
+      "id": "investigate",
+      "title": "Map existing system",
+      "goal": "Trace relevant code, tests, history, runtime surfaces and ownership before design decisions.",
+      "agent": "planner",
+      "dependsOn": [
+        "frame"
+      ],
+      "risk": "low",
+      "acceptance": [
+        "Relevant entry points, dependencies and existing patterns are identified.",
+        "Unknowns capable of changing the design are resolved or explicitly listed."
+      ],
+      "verification": [
+        "Cite repository paths and runtime surfaces in the task packet."
+      ]
+    },
+    {
+      "id": "architecture",
+      "title": "Set architecture contract",
+      "goal": "Define boundaries, data shapes, state ownership, dependency direction, failure semantics and migration behavior.",
+      "agent": "planner",
+      "dependsOn": [
+        "investigate"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Interfaces and invariants are explicit.",
+        "The design uses the smallest sufficient mechanism."
+      ],
+      "verification": [
+        "Review architecture decision against repository dependency rules and existing contracts."
+      ]
+    },
+    {
+      "id": "baseline",
+      "title": "Establish tests or behavioral baseline",
+      "goal": "Create a failing contract test or capture a measurable pre-change baseline before implementation where practical.",
+      "agent": "verifier",
+      "dependsOn": [
+        "architecture"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Pre-change behavior is recorded.",
+        "The proof targets the requested contract rather than incidental implementation details."
+      ],
+      "verification": [
+        "Run the focused test or baseline recipe and store evidence."
+      ]
+    },
+    {
+      "id": "implement",
+      "title": "Implement smallest coherent feature slice",
+      "goal": "Implement the agreed behavior without unrelated refactoring or speculative architecture.",
+      "agent": "product-engineer",
+      "dependsOn": [
+        "baseline"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Requested behavior is implemented within agreed boundaries.",
+        "No unrelated scope is introduced."
+      ],
+      "verification": [
+        "Inspect the diff against the architecture contract and acceptance criteria."
+      ]
+    },
+    {
+      "id": "static-verify",
+      "title": "Run deterministic gates",
+      "goal": "Run relevant formatting, type, lint, unit, integration and architecture checks.",
+      "agent": "verifier",
+      "dependsOn": [
+        "implement"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "All relevant deterministic gates pass or the task remains blocked."
+      ],
+      "verification": [
+        "Capture exact commands and passing output in structured evidence."
+      ]
+    },
+    {
+      "id": "runtime-verify",
+      "title": "Prove real product behavior",
+      "goal": "Operate the real UI, API, CLI or closest faithful environment and prove the user/system outcome plus side effects.",
+      "agent": "runtime-verifier",
+      "dependsOn": [
+        "implement"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "Every user-facing acceptance criterion has runtime evidence.",
+        "Important side effects are verified independently of visible output."
+      ],
+      "verification": [
+        "Use the feature map or runtime-verification skill and produce evidence JSON."
+      ]
+    },
+    {
+      "id": "adversarial-review",
+      "title": "Try to falsify the change",
+      "goal": "Challenge correctness, blast radius, boundary cases, security, retries, migrations and verification gaps.",
+      "agent": "adversarial-reviewer",
+      "dependsOn": [
+        "static-verify",
+        "runtime-verify"
+      ],
+      "risk": "high",
+      "acceptance": [
+        "Blocking findings are explicit and evidence-backed.",
+        "If no issue is found, attempted counterexamples are recorded."
+      ],
+      "verification": [
+        "Review findings against actual ref and test/runtime evidence."
+      ]
+    },
+    {
+      "id": "integrate",
+      "title": "Resolve findings and close out",
+      "goal": "Resolve blocking review findings, rerun affected gates and prepare evidence-backed integration.",
+      "agent": "integration-engineer",
+      "dependsOn": [
+        "adversarial-review"
+      ],
+      "risk": "medium",
+      "acceptance": [
+        "Every acceptance criterion maps to passing evidence.",
+        "Residual uncertainty and follow-up work are explicit."
+      ],
+      "verification": [
+        "Rerun any gate invalidated by fixes and produce final evidence."
+      ]
+    }
+  ]
+}
