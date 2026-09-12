@@ -1,155 +1,294 @@
 # AI Engineering
 
-Base reutilizável para desenvolver software com agentes de IA sem depender de um único editor, modelo ou provedor.
+Um sistema reutilizável para **engenharia de software agent-first**: não apenas prompts ou MCPs, mas o harness completo que permite a agentes planejar, executar, verificar, colaborar e melhorar o próprio ambiente com segurança.
 
-Última revisão da arquitetura: 2026-09-11.
+Última revisão arquitetural: 2026-09-12.
 
-## O que este repositório resolve
+## A ideia central
 
-Este projeto organiza AI Engineering em camadas diferentes, porque cada problema pede um mecanismo diferente:
+O modelo é só uma peça. O desempenho real de um agente de engenharia depende de cinco camadas:
 
-1. **AGENTS.md**: contexto e regras duráveis do repositório.
-2. **Skills**: workflows especializados e carregados sob demanda.
-3. **Subagents**: papéis com contexto isolado para tarefas complexas ou paralelas.
-4. **MCP**: conexão com dados, APIs e ações externas.
-5. **Hooks e permissões**: guardrails para execução.
-6. **Evals**: testes de comportamento para sistemas probabilísticos.
-7. **Observabilidade**: tracing, custo, latência, tool calls e regressões.
+```text
+intent/spec
+    ↓
+orchestration
+    ↓
+execution environment
+    ↓
+verification
+    ↓
+learning loop
+```
 
-A regra central deste repo é: **não transforme tudo em prompt e não transforme tudo em MCP**.
+Este repositório transforma essas camadas em componentes reutilizáveis.
 
-Um especialista de frontend é melhor modelado como skill/subagent. Um conector para Figma, GitHub, banco, analytics ou observabilidade é um bom caso para MCP.
+### 1. Intent e contratos
+
+O agente precisa saber **o resultado observável**, não apenas "escreva código".
+
+Artefatos:
+
+- `AGENTS.md`: mapa curto do repositório e regras duráveis
+- `templates/EXEC_PLAN.md`: plano executável para trabalho longo
+- `templates/SPRINT_CONTRACT.md`: contrato entre builder e verifier
+- `templates/FEATURE_MAP.md`: mapa de funcionalidades do ponto de vista do usuário
+
+### 2. Orquestração
+
+Escolha a topologia pelo problema:
+
+- single-agent loop
+- planner → builder → verifier
+- supervisor + specialists
+- DAG de tarefas com workers paralelos
+- arena: N soluções independentes + juiz
+- adversarial review
+- background maintainers
+
+O repo inclui um task graph determinístico e contratos para handoff.
+
+### 3. Ambiente de execução
+
+Agentes devem trabalhar em ambientes que consigam entender e operar:
+
+- worktree/checkout isolado por tarefa
+- boot determinístico
+- fixtures/seed reproduzíveis
+- ferramentas com contratos estreitos
+- logs, traces e métricas acessíveis
+- arquitetura explícita e mecanicamente verificável
+
+### 4. Verificação
+
+A regra mais importante deste repo:
+
+> **"done" precisa de evidência executável.**
+
+A escada de verificação é:
+
+```text
+static checks
+  → unit/property tests
+  → contract/integration
+  → real runtime
+  → user-path E2E
+  → perf/observability
+  → adversarial review
+```
+
+Nem toda mudança precisa chegar ao último nível. Mas a verificação deve corresponder ao risco e ao comportamento alterado.
+
+### 5. Learning loop
+
+Falhas não devem virar prompts maiores. Devem virar, na ordem de preferência:
+
+1. teste/regression case
+2. tipo/schema/invariante
+3. lint/CI guardrail
+4. ferramenta/harness
+5. skill/playbook
+6. documentação
+
+Isso faz o sistema acumular capacidade sem acumular instruções frágeis.
+
+---
 
 ## Estrutura
 
-~~~text
+```text
 .
 ├── AGENTS.md
-├── .agents/skills/              # skills portáveis
+├── .agents/skills/
+│   ├── engineering-mode/        # roteador principal
+│   ├── runtime-verification/
+│   ├── agent-ready-repo/
+│   ├── task-graph/
+│   ├── parallel-arena/
+│   ├── adversarial-review/
+│   ├── handoff/
+│   └── runtime-forensics/
 ├── .cursor/
-│   ├── agents/                  # subagents do Cursor
-│   └── rules/                   # regras persistentes
-├── .opencode/agents/            # agentes do OpenCode
-├── configs/                     # exemplos de providers e MCP
-├── docs/                        # decisões e guias
-├── evals/                       # datasets e contratos de avaliação
-├── mcp/starter-typescript/      # starter MCP 2026-07-28
-├── scripts/                     # instalação e doctor
-└── templates/                   # specs reutilizáveis
-~~~
+│   ├── agents/
+│   └── rules/
+├── .opencode/agents/
+├── configs/
+├── docs/
+│   ├── harness-engineering.md
+│   ├── multi-agent-systems.md
+│   ├── agent-ready-codebase.md
+│   ├── verification-system.md
+│   ├── task-graphs-control-plane.md
+│   ├── long-running-agents.md
+│   ├── software-engineering-for-agents.md
+│   └── learning-loop.md
+├── orchestration/
+│   ├── task-graph.schema.json
+│   └── example.taskgraph.json
+├── evals/
+├── mcp/starter-typescript/
+├── scripts/
+│   ├── taskgraph.mjs
+│   ├── repo-readiness.mjs
+│   └── architecture-lint.mjs
+└── templates/
+```
 
 ## Começo rápido
 
-### Usar este repo como biblioteca
+Clone este repo e instale o kit no projeto alvo:
 
-Clone o repositório e instale o kit em outro projeto:
-
-~~~bash
+```bash
 node scripts/install.mjs ../meu-projeto --all
-~~~
+```
 
-O instalador é conservador: não sobrescreve AGENTS.md existente e copia apenas os adapters escolhidos.
+Depois faça o diagnóstico:
 
-Targets:
-
-~~~bash
-node scripts/install.mjs ../meu-projeto --portable
-node scripts/install.mjs ../meu-projeto --cursor
-node scripts/install.mjs ../meu-projeto --opencode
-node scripts/install.mjs ../meu-projeto --all
-~~~
-
-Depois valide:
-
-~~~bash
+```bash
 node scripts/doctor.mjs ../meu-projeto
-~~~
+node scripts/repo-readiness.mjs ../meu-projeto
+```
 
-### Cursor
+### Executar um trabalho grande como DAG
 
-O repo inclui:
+Valide o grafo:
 
-- regras em .cursor/rules
-- subagents em .cursor/agents
-- skills portáveis em .agents/skills
+```bash
+node scripts/taskgraph.mjs validate orchestration/example.taskgraph.json
+```
 
-Use os subagents quando precisar de isolamento de contexto ou trabalho paralelo. Use skills para workflows repetíveis e focados.
+Veja tarefas desbloqueadas:
 
-### OpenCode
+```bash
+node scripts/taskgraph.mjs ready orchestration/example.taskgraph.json
+```
 
-O arquivo opencode.jsonc carrega AGENTS.md e mantém permissões conservadoras. Há um exemplo de execução local em configs/opencode.local.example.jsonc.
+O estado de execução é separado da especificação, permitindo retries e múltiplos workers sem reescrever o plano.
 
-Você pode usar provedores cloud ou modelos locais via Ollama e LM Studio.
+---
 
-### MCP
+## O que vai em cada mecanismo
 
-Há um starter em mcp/starter-typescript usando o SDK v2 e o protocolo 2026-07-28.
+| Necessidade | Mecanismo |
+|---|---|
+| Regra estável do repositório | AGENTS.md |
+| Workflow especializado | Skill |
+| Contexto isolado / papel independente | Subagent |
+| Trabalho paralelo independente | Worktree + worker |
+| Dependências entre trabalhos | Task DAG |
+| Acesso a sistema externo | MCP/tool |
+| Provar comportamento real | Verification harness |
+| Regressão probabilística | Eval |
+| Invariante arquitetural | Lint/test/schema |
+| Trabalho longo | Exec plan + handoff |
+| Falha recorrente | Guardrail/skill/test |
 
-~~~bash
-cd mcp/starter-typescript
-npm install
-npm run dev
-~~~
+## Topologias multiagentes
 
-O starter demonstra uma ferramenta de leitura limitada a uma raiz explícita, sem shell arbitrário e sem acesso irrestrito ao filesystem.
+### Planner → Builder → Verifier
 
-## Catálogo inicial
+Default para trabalho não trivial quando há valor em separar construção de julgamento.
 
-### Skills
+### Supervisor + specialists
 
-- ai-feature: projetar features com LLMs/agentes do contrato ao rollout
-- frontend-quality: UI, acessibilidade, responsividade, performance e estados
-- backend-api: contratos, persistência, idempotência, filas e observabilidade
-- security-review: revisão defensiva e threat modeling
-- mcp-server: decidir quando MCP faz sentido e implementar com limites claros
-- eval-driven: criar datasets, métricas e gates de regressão
-- prompt-context: estruturar instruções, contexto, outputs e tool use
-- growth-marketing: instrumentação, experimentos e conteúdo com critérios de medição
+Bom quando o trabalho atravessa domínios diferentes e o supervisor precisa rotear contexto.
 
-### Subagents
+### DAG + parallel workers
 
-- frontend-engineer
-- backend-engineer
-- ai-engineer
-- security-auditor
-- growth-engineer
-- verifier
+Bom quando existem tarefas independentes com dependências explícitas. Cada worker recebe um workspace isolado.
 
-## Qualidade automática\n\nA workflow em .github/workflows/ci.yml executa o doctor do toolkit e valida o starter MCP com typecheck + testes em pull requests e pushes para main.\n\n## Princípios
+### Arena
 
-**Context engineering > prompt dumping.** O modelo precisa do contexto certo, na hora certa, não de um arquivo gigante carregado em toda requisição.
+Use quando o problema é de design ou arquitetura e há mais valor em diversidade de soluções do que em decomposição.
 
-**Evals antes de escala.** Mudanças em prompt, modelo, ferramenta ou retrieval devem ser comparáveis contra um conjunto de casos.
+### Adversarial review
 
-**Ferramentas com least privilege.** Agentes não devem ganhar acesso destrutivo por padrão.
+Um agente constrói; outro tenta quebrar. Melhor que pedir ao mesmo agente para certificar o próprio trabalho.
 
-**Model agnostic.** Este repo não fixa um modelo como dogma. Modelos mudam rápido; contratos, evals e arquitetura devem sobreviver à troca.
+Veja `docs/multi-agent-systems.md`.
 
-**Humano no loop para ações sensíveis.** Mudanças destrutivas, deploy, dados de produção e operações irreversíveis exigem confirmação ou controles equivalentes.
+---
 
-## O que acompanhar em 2026
+## Codebase agent-ready
 
-A base foi alinhada com:
+Um repositório preparado para agentes deve oferecer:
 
-- Cursor: Rules, Skills, Subagents, Hooks e MCP
-- OpenCode: agents, skills, permissions, MCP e providers locais
-- MCP 2026-07-28: core stateless, SDK v2 e deprecações atuais
-- Codex: AGENTS.md, skills e execução multi-agent
-- práticas de eval/observability para agentes
+- mapa curto de arquitetura
+- documentação versionada junto ao código
+- limites de módulos visíveis
+- schemas nas fronteiras
+- comandos únicos para boot/test/verify
+- ambientes isoláveis
+- fixtures determinísticas
+- user paths automatizáveis
+- logs/traces consultáveis
+- tarefas pequenas e verificáveis
+- decisões registradas
+- dívida técnica explícita
+- linters para regras que não podem depender de memória
 
-Veja docs/market-2026.md para fontes e decisões.
+Veja `docs/agent-ready-codebase.md`.
 
-## Próximos módulos que fazem sentido adicionar
+---
 
-Este repo deve crescer por necessidade real, não por quantidade de prompts. Bons próximos módulos:
+## Catálogo de Skills
 
-- adapters para Claude Code e Codex quando você quiser usá-los diretamente
-- MCPs específicos para seus fluxos reais
-- eval harness executável em CI
-- tracing com OpenTelemetry/Langfuse
-- templates de RAG e search
-- policy gates para deploy, banco e secrets
-- plugin distribuível do Cursor quando o catálogo estabilizar
+### Core
+
+- `engineering-mode`: classifica a tarefa e escolhe o playbook correto
+- `runtime-verification`: prova mudanças no artefato real
+- `agent-ready-repo`: torna um projeto legível e operável por agentes
+- `task-graph`: decompõe trabalho em DAG com dependências
+- `handoff`: transfere estado entre sessões/agentes sem depender de chat
+
+### Parallelismo e review
+
+- `parallel-arena`: múltiplas soluções independentes + síntese
+- `adversarial-review`: reviewer cético independente
+- `runtime-forensics`: CPU, memória, logs, traces e sintomas reais
+
+### Especialistas existentes
+
+- `ai-feature`
+- `frontend-quality`
+- `backend-api`
+- `security-review`
+- `mcp-server`
+- `eval-driven`
+- `prompt-context`
+- `growth-marketing`
+
+---
+
+## Filosofia de engenharia
+
+**Proof over prose.** Um resultado que não consegue ser provado ainda é hipótese.
+
+**Maps over manuals.** Dê ao agente um mapa progressivo; não despeje uma enciclopédia no contexto.
+
+**Invariants over instructions.** Se uma regra pode virar tipo, teste, lint ou schema, faça isso.
+
+**Parallelize independent work, not shared state.** Multiagente sem isolamento produz contenção e merge churn.
+
+**External verification over self-confidence.** O builder não é a única fonte de verdade sobre o próprio trabalho.
+
+**Boring architecture is leverage.** Estruturas previsíveis, interfaces estáveis e dependências explícitas aumentam legibilidade para humanos e agentes.
+
+**Harness complexity must earn its cost.** Comece simples; adicione planner, evaluator, swarm ou loops só quando o baseline não for suficiente.
+
+---
+
+## Pesquisa de 2026 que orienta este repo
+
+A arquitetura foi atualizada com base em práticas observadas em:
+
+- OpenAI Harness Engineering e Symphony
+- Anthropic long-running harnesses, agent teams e evaluator loops
+- Cursor pstack / práticas de verification-first
+- LangGraph para stateful graphs e multi-actor workflows
+- MCP 2026-07-28
+- evals e observabilidade para agentes
+
+As fontes e decisões ficam em `docs/market-2026.md`.
 
 ## Licença
 
