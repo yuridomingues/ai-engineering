@@ -1,13 +1,16 @@
 {
   "name": "ai-engineering-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Reusable AI engineering toolkit for agents, skills, MCP, evals and context engineering.",
+  "description": "Reusable agent engineering harness with workflows, verification, skills, MCP and provider adapters.",
   "scripts": {
     "install:kit": "node scripts/install.mjs",
     "doctor": "node scripts/doctor.mjs",
-    "doctor:self": "node scripts/doctor.mjs ."
+    "doctor:self": "node scripts/doctor.mjs .",
+    "harness:test": "node --test harness/test/*.test.mjs",
+    "workflow:check": "node harness/workflow.mjs check workflows/feature.json && node harness/workflow.mjs check workflows/bugfix.json && node harness/workflow.mjs check workflows/refactor.json && node harness/workflow.mjs check workflows/arena.json",
+    "workflow:graph": "node harness/workflow.mjs graph workflows/feature.json"
   },
   "engines": {
     "node": ">=20"

@@ -1,0 +1,14 @@
+---
+description: Verification-first workflow and multi-agent discipline
+alwaysApply: true
+---
+For non-trivial engineering tasks, prefer the engineering-mode skill and an explicit playbook.
+
+- Start from observable acceptance criteria.
+- Investigate before editing.
+- Separate implementation from independent verification.
+- Use isolated worktrees/environments for concurrent writers.
+- Parallelize only when ownership or judgment is genuinely independent.
+- Do not use "agent says done" as a completion criterion.
+- Capture commands, artifacts, metrics or reproduction evidence.
+- Convert repeated failure modes into tests, lints, policies, docs, skills or tools.

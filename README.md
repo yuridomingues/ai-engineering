@@ -1,155 +1,181 @@
 # AI Engineering
 
-Base reutilizável para desenvolver software com agentes de IA sem depender de um único editor, modelo ou provedor.
+Um sistema reutilizável para **engenharia de software com agentes**, não uma coleção de prompts.
 
-Última revisão da arquitetura: 2026-09-11.
+Revisão arquitetural: 2026-09-12.
 
-## O que este repositório resolve
+## O que mudou na V2
 
-Este projeto organiza AI Engineering em camadas diferentes, porque cada problema pede um mecanismo diferente:
+A primeira versão organizava Skills, Subagents, MCP e evals. Isso é necessário, mas não suficiente para escalar agentes.
 
-1. **AGENTS.md**: contexto e regras duráveis do repositório.
-2. **Skills**: workflows especializados e carregados sob demanda.
-3. **Subagents**: papéis com contexto isolado para tarefas complexas ou paralelas.
-4. **MCP**: conexão com dados, APIs e ações externas.
-5. **Hooks e permissões**: guardrails para execução.
-6. **Evals**: testes de comportamento para sistemas probabilísticos.
-7. **Observabilidade**: tracing, custo, latência, tool calls e regressões.
+A V2 adiciona a camada que realmente muda throughput e confiabilidade:
 
-A regra central deste repo é: **não transforme tudo em prompt e não transforme tudo em MCP**.
+- **agent harness** provider-neutral
+- **workflows em DAG** para feature, bugfix, refactor e arena
+- **verification-first**
+- **feature maps** para o agente conseguir operar o produto
+- **evidence ledger** com hash dos artefatos
+- **isolamento por worktree**
+- **separação entre implementador e verifier**
+- **fan-out/fan-in, arena e adversarial review**
+- **estado durável** para tarefas que sobrevivem a sessão/modelo
+- **dispatcher local** para Cursor/OpenCode
+- **reflection loop**: falhas viram testes, policies, skills ou tooling
 
-Um especialista de frontend é melhor modelado como skill/subagent. Um conector para Figma, GitHub, banco, analytics ou observabilidade é um bom caso para MCP.
+## Arquitetura
 
-## Estrutura
+```text
+pedido
+  |
+  v
+engineering-mode
+  |
+  v
+workflow DAG
+  |
+  +-- research scouts
+  +-- architecture gate
+  +-- tests/baseline
+  +-- isolated implementation
+  +-- deterministic verification
+  +-- real-product verification
+  +-- adversarial reviewers
+  |
+  v
+integrator
+  |
+  v
+evidence-backed closeout
+```
 
-~~~text
-.
-├── AGENTS.md
-├── .agents/skills/              # skills portáveis
-├── .cursor/
-│   ├── agents/                  # subagents do Cursor
-│   └── rules/                   # regras persistentes
-├── .opencode/agents/            # agentes do OpenCode
-├── configs/                     # exemplos de providers e MCP
-├── docs/                        # decisões e guias
-├── evals/                       # datasets e contratos de avaliação
-├── mcp/starter-typescript/      # starter MCP 2026-07-28
-├── scripts/                     # instalação e doctor
-└── templates/                   # specs reutilizáveis
-~~~
+Leia `ARCHITECTURE.md` e `docs/agent-system/`.
 
-## Começo rápido
+## Workflow harness
 
-### Usar este repo como biblioteca
+Validar todos os conceitos começa com workflows explícitos:
 
-Clone o repositório e instale o kit em outro projeto:
+```bash
+node harness/workflow.mjs check workflows/feature.json
+node harness/workflow.mjs graph workflows/feature.json
+```
 
-~~~bash
-node scripts/install.mjs ../meu-projeto --all
-~~~
+Criar uma execução durável:
 
-O instalador é conservador: não sobrescreve AGENTS.md existente e copia apenas os adapters escolhidos.
+```bash
+node harness/workflow.mjs init workflows/feature.json
+```
 
-Targets:
+Depois:
 
-~~~bash
-node scripts/install.mjs ../meu-projeto --portable
-node scripts/install.mjs ../meu-projeto --cursor
-node scripts/install.mjs ../meu-projeto --opencode
-node scripts/install.mjs ../meu-projeto --all
-~~~
+```bash
+node harness/workflow.mjs ready .ai/runs/<run>
+node harness/workflow.mjs start .ai/runs/<run> frame --agent orchestrator
+node harness/workflow.mjs status .ai/runs/<run>
+```
 
-Depois valide:
+Um node só termina com evidência:
 
-~~~bash
-node scripts/doctor.mjs ../meu-projeto
-~~~
+```bash
+node harness/workflow.mjs complete .ai/runs/<run> frame \
+  --evidence ./plan.md \
+  --summary "Acceptance criteria and risk were defined"
+```
 
-### Cursor
+## Executar agentes localmente
 
-O repo inclui:
+O harness não amarra o workflow a um vendor.
 
-- regras em .cursor/rules
-- subagents em .cursor/agents
-- skills portáveis em .agents/skills
+OpenCode:
 
-Use os subagents quando precisar de isolamento de contexto ou trabalho paralelo. Use skills para workflows repetíveis e focados.
+```bash
+node harness/dispatch.mjs .ai/runs/<run> investigate \
+  --driver opencode --workspace ../meu-projeto --execute
+```
 
-### OpenCode
+Cursor:
 
-O arquivo opencode.jsonc carrega AGENTS.md e mantém permissões conservadoras. Há um exemplo de execução local em configs/opencode.local.example.jsonc.
+```bash
+node harness/dispatch.mjs .ai/runs/<run> implement \
+  --driver cursor --workspace ../meu-projeto --execute
+```
 
-Você pode usar provedores cloud ou modelos locais via Ollama e LM Studio.
+Sem `--execute`, o dispatcher é dry-run.
 
-### MCP
+O processo do agente terminar com exit 0 **não certifica o node**. Ele continua `running` até receber evidência de verificação.
 
-Há um starter em mcp/starter-typescript usando o SDK v2 e o protocolo 2026-07-28.
+## Time de agentes
 
-~~~bash
-cd mcp/starter-typescript
-npm install
-npm run dev
-~~~
+O repo inclui especialistas de domínio e também papéis de processo:
 
-O starter demonstra uma ferramenta de leitura limitada a uma raiz explícita, sem shell arbitrário e sem acesso irrestrito ao filesystem.
-
-## Catálogo inicial
-
-### Skills
-
-- ai-feature: projetar features com LLMs/agentes do contrato ao rollout
-- frontend-quality: UI, acessibilidade, responsividade, performance e estados
-- backend-api: contratos, persistência, idempotência, filas e observabilidade
-- security-review: revisão defensiva e threat modeling
-- mcp-server: decidir quando MCP faz sentido e implementar com limites claros
-- eval-driven: criar datasets, métricas e gates de regressão
-- prompt-context: estruturar instruções, contexto, outputs e tool use
-- growth-marketing: instrumentação, experimentos e conteúdo com critérios de medição
-
-### Subagents
-
+- orchestrator
+- researcher
+- architecture-reviewer
+- test-engineer
+- product-engineer
 - frontend-engineer
 - backend-engineer
 - ai-engineer
+- product-verifier
 - security-auditor
-- growth-engineer
 - verifier
+- integrator
 
-## Qualidade automática\n\nA workflow em .github/workflows/ci.yml executa o doctor do toolkit e valida o starter MCP com typecheck + testes em pull requests e pushes para main.\n\n## Princípios
+A ideia não é usar todos em toda tarefa. O workflow escolhe a menor topologia necessária.
 
-**Context engineering > prompt dumping.** O modelo precisa do contexto certo, na hora certa, não de um arquivo gigante carregado em toda requisição.
+## Skills de engenharia rigorosa
 
-**Evals antes de escala.** Mudanças em prompt, modelo, ferramenta ou retrieval devem ser comparáveis contra um conjunto de casos.
+Além das skills de domínio:
 
-**Ferramentas com least privilege.** Agentes não devem ganhar acesso destrutivo por padrão.
+- engineering-mode
+- verify-product
+- architect
+- tdd
+- arena
+- interrogate
+- reflect
 
-**Model agnostic.** Este repo não fixa um modelo como dogma. Modelos mudam rápido; contratos, evals e arquitetura devem sobreviver à troca.
+Elas existem para transformar engenharia em playbooks verificáveis, não para criar personas decorativas.
 
-**Humano no loop para ações sensíveis.** Mudanças destrutivas, deploy, dados de produção e operações irreversíveis exigem confirmação ou controles equivalentes.
+## Worktrees
 
-## O que acompanhar em 2026
+Para vários agentes escritores:
 
-A base foi alinhada com:
+```bash
+node harness/worktree.mjs create auth-fix main
+node harness/worktree.mjs list
+node harness/worktree.mjs remove auth-fix
+```
 
-- Cursor: Rules, Skills, Subagents, Hooks e MCP
-- OpenCode: agents, skills, permissions, MCP e providers locais
-- MCP 2026-07-28: core stateless, SDK v2 e deprecações atuais
-- Codex: AGENTS.md, skills e execução multi-agent
-- práticas de eval/observability para agentes
+O remove recusa worktree suja.
 
-Veja docs/market-2026.md para fontes e decisões.
+Cursor também possui worktrees/subagents nativos; use o mecanismo do host quando ele oferecer isolamento melhor.
 
-## Próximos módulos que fazem sentido adicionar
+## Reutilizar em outro projeto
 
-Este repo deve crescer por necessidade real, não por quantidade de prompts. Bons próximos módulos:
+```bash
+node scripts/install.mjs ../meu-projeto --all
+node scripts/doctor.mjs ../meu-projeto
+```
 
-- adapters para Claude Code e Codex quando você quiser usá-los diretamente
-- MCPs específicos para seus fluxos reais
-- eval harness executável em CI
-- tracing com OpenTelemetry/Langfuse
-- templates de RAG e search
-- policy gates para deploy, banco e secrets
-- plugin distribuível do Cursor quando o catálogo estabilizar
+O kit é copiado para `.ai/`, enquanto Skills/adapters vão para os locais esperados por Cursor/OpenCode. Um `AGENTS.md` já existente nunca é sobrescrito.
+
+## Princípios
+
+**Proof over confidence.** Completion requires observable evidence.
+
+**Repository as harness.** Architecture, docs, commands, observability and CI are part of agent performance.
+
+**Parallelism after verification.** Primeiro faça um agente ser confiável; depois replique.
+
+**Separation of duties.** Quem implementa não deve ser a única autoridade que certifica.
+
+**Hard constraints compound.** Tipos, testes, lints e policies são mais confiáveis que lembretes em prompt.
+
+**Model agnostic.** Modelos mudam; contratos, workflows, evidence e guardrails devem sobreviver.
+
+## Pesquisa 2026
+
+`docs/agent-system/sources-2026.md` registra as referências usadas: harness engineering, Symphony, pstack, Microsoft Agent Framework, SWE-agent/ACI e Codex harness.
 
 ## Licença
 

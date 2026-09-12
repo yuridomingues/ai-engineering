@@ -10,15 +10,25 @@ permissions:
   contents: read
 
 jobs:
-  doctor:
+  harness:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Test workflow library
+        run: npm run harness:test
+      - name: Validate workflow DAGs
+        run: npm run workflow:check
       - name: Validate toolkit structure
-        run: node scripts/doctor.mjs .
+        run: npm run doctor:self
+      - name: Smoke-test installer
+        run: |
+          rm -rf /tmp/ai-engineering-kit
+          node scripts/install.mjs /tmp/ai-engineering-kit --all
+          node scripts/doctor.mjs /tmp/ai-engineering-kit
+          node /tmp/ai-engineering-kit/.ai/harness/workflow.mjs check /tmp/ai-engineering-kit/.ai/workflows/feature.json
 
   mcp-starter:
     runs-on: ubuntu-latest
