@@ -13,7 +13,9 @@
     "taskgraph:validate": "node scripts/taskgraph.mjs validate orchestration/example.taskgraph.json",
     "architecture:selftest": "node scripts/architecture-lint.mjs configs/architecture.layers.selftest.json",
     "worktree:list": "node scripts/worktree.mjs list",
-    "runner:dry": "node scripts/agent-runner.mjs"
+    "runner:dry": "node scripts/agent-runner.mjs",
+    "playbook:list": "node scripts/playbook.mjs list",
+    "playbook:validate": "node scripts/taskgraph.mjs validate orchestration/playbooks/feature.json && node scripts/taskgraph.mjs validate orchestration/playbooks/bugfix.json && node scripts/taskgraph.mjs validate orchestration/playbooks/refactor.json && node scripts/taskgraph.mjs validate orchestration/playbooks/arena.json && node scripts/taskgraph.mjs validate orchestration/playbooks/performance.json"
   },
   "engines": {
     "node": ">=20"

@@ -157,6 +157,26 @@ Decision:
 - OpenCode is the main open/local-friendly provider adapter
 - the control plane is not coupled to OpenCode
 
+
+### OpenCode 2 beta
+
+Em setembro de 2026, OpenCode 2 ainda é distribuído como beta separada (`opencode2`), enquanto a linha estável continua disponível como `opencode`. A V2 também introduz formatos nativos novos para permissões e MCP.
+
+Decisão:
+
+- `scripts/agent-runner.mjs` prefere `opencode2` quando ela está instalada e faz fallback para `opencode`
+- `--binary` permite fixar explicitamente qual CLI executar
+- os agentes usam `mode: all` para poderem ser selecionados diretamente pelo runner ou chamados como subagentes
+- `opencode.jsonc` permanece como configuração estável/V1; exemplos nativos de V2 ficam em `configs/opencode.v2*.jsonc`
+- não depender de uma beta para o núcleo do control plane
+
+Fontes:
+
+- https://opencode.ai/docs/v2/
+- https://opencode.ai/docs/v2/migrate/
+- https://opencode.ai/docs/v2/permissions/
+- https://opencode.ai/docs/v2/agents/
+
 ## Stateful graphs
 
 Graph frameworks such as LangGraph remain useful when the product itself needs durable stateful multi-actor workflows, checkpoints, supervisors or handoffs.

@@ -30,6 +30,18 @@ jobs:
       - name: Validate task DAG
         run: node scripts/taskgraph.mjs validate orchestration/example.taskgraph.json
 
+      - name: Validate reusable engineering playbooks
+        run: |
+          for graph in orchestration/playbooks/*.json; do
+            node scripts/taskgraph.mjs validate "$graph"
+          done
+
+      - name: Smoke-test playbook instantiation
+        run: |
+          rm -rf .agent/playbook-smoke
+          node scripts/playbook.mjs init bugfix --name ci-bugfix --out .agent/playbook-smoke/bugfix.json
+          node scripts/taskgraph.mjs validate .agent/playbook-smoke/bugfix.json
+
       - name: Check agent readiness
         run: node scripts/repo-readiness.mjs . --strict 70
 
